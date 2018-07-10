@@ -19,17 +19,29 @@ get_tweet_blockquote <- function(screen_name, status_id) {
 }
 
 close_to_sd <- function(lat, lng) {
-  sandiego <- rtweet::lookup_coords("Sand Diego, CA")$point %>% as_radian
+  
+  # location_coords <- rtweet::lookup_coords("Sand Diego, CA")$point %>% as_radian
+  
+  # You will need a Google Geocode API to execute this. If not, you can just hard code you
+  # location co-ordinates: 
+  # location_coords <- rtweet::lookup_coords("Brisbane, AU")$point %>% as_radian
+  
+  # Location coordinates for Brisbane, AU in degrees
+  
+  location_coords <- c("lat" = -27.46794, "lng" = 153.02809)
+  location_coords <- location_coords %>% as_radian
+  
+  
   # from http://janmatuschek.de/LatitudeLongitudeBoundingCoordinates
   
   delta_lat <- 50/3958.76
   delta_lng <- asin(sin(as_radian(lat))/cos(delta_lat))
   lat <- as_radian(lat)
   lng <- as_radian(lng)
-  lat >= sandiego['lat'] - delta_lat &
-    lat <= sandiego['lat'] + delta_lat &
-    lng >= sandiego['lng'] - delta_lng & 
-    lng <= sandiego['lng'] + delta_lng
+  lat >= location_coords['lat'] - delta_lat &
+    lat <= location_coords['lat'] + delta_lat &
+    lng >= location_coords['lng'] - delta_lng & 
+    lng <= location_coords['lng'] + delta_lng
 }
 
 as_radian <- function(degree) degree * pi / 180
@@ -38,7 +50,7 @@ ui <- fluidPage(
   tags$head(
     tags$link(rel = "stylesheet", type = "text/css", href = "custom.css"),
     tags$script(src="twitter.js")),
-  titlePanel("rstudio::conf_twitter()"),
+  titlePanel("useR2018_twitter()"),
   theme = shinythemes::shinytheme('yeti'),
   
   
@@ -67,9 +79,6 @@ ui <- fluidPage(
                tags$p(
                  HTML("&#x1F4BE;"), tags$a(href = 'https://github.com/gadenbuie/rsconf_tweets', 'View on GitHub')
                  , "or", downloadLink('download_tweets', "Download Tweets")
-               ),
-               tags$p(
-                 "Final update: 2018-02-07 11:48:02 EST"
                )
              )
     )
@@ -115,9 +124,9 @@ server <- function(input, output) {
             'Has Github Link' = filter(x, str_detect(urls_url, "github")),
             "Retweeted" = filter(x, retweet_count > 0),
             "Favorited" = filter(x, favorite_count > 0),
-            "Probably There IRL" = x %>% lat_lng() %>% 
-              filter( 
-                str_detect(tolower(place_full_name), "san diego") | 
+            "Probably There IRL" = x %>% lat_lng() %>%
+              filter(
+                str_detect(tolower(place_full_name), "brisbane") |
                   close_to_sd(lat, lng) |
                   user_id %in% users_there_IRL
               )
@@ -190,7 +199,7 @@ server <- function(input, output) {
   
   output$download_tweets <-  downloadHandler(
     filename = function() {
-      paste("rstudio-conf-tweets-", Sys.Date(), ".RDS", sep="")
+      paste("useR2018-tweets-", Sys.Date(), ".RDS", sep="")
     },
     content = function(file) {
       saveRDS(rsconf_tweets, file)

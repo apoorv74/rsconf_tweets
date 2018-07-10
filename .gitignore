@@ -4,3 +4,4 @@
 *.rds
 data/*
 twitter_secrets.R
+rsconnect/

@@ -8,7 +8,9 @@ lapply(packages, function(pkg) {
     require(pkg, character.only = TRUE)
   }
 })
-TWEET_REFRESH_ENABLED <- FALSE
+
+lapply(packages, require, character.only = TRUE)
+TWEET_REFRESH_ENABLED <- TRUE
 
 if (!dir.exists('data')) system('mkdir -p data')
 setCacheDir('data')
@@ -28,6 +30,7 @@ cacheFile <- 'data/rsconf_tweets.rds'
 #   consumer_secret = .TWITTER_CONSUMER_SECRET
 # )
 # saveRDS(twitter_token, .TWITTER_PAT)
+
 if (TWEET_REFRESH_ENABLED) {
   if (file.exists('twitter_secrets.R')) source('twitter_secrets.R')
   if (!exists('.TWITTER_PAT')) {
@@ -40,11 +43,18 @@ if (TWEET_REFRESH_ENABLED) {
 get_new_tweets <- function(max_id) {
   tip_words <- "(TIL|DYK|[Tt]ip|[Ll]earned|[Uu]seful|[Kk]now|[Tt]rick)"
   session_words <- "([Aa]vailable|[Oo]nline|[Ll]ink|[Ss]lide|[Ss]ession)"
-  rstudio_conf_search <- c("rstudioconf", "rstudio::conf",
-                           "rstudioconference", "rstudioconference18",
-                           "rstudioconference2018", "rstudio18",
-                           "rstudioconf18", "rstudioconf2018",
-                           "rstudio::conf18", "rstudio::conf2018")
+
+  # Commenting out hashtags for the Rstudio conference 
+  
+  # rstudio_conf_search <- c("rstudioconf", "rstudio::conf",
+  #                          "rstudioconference", "rstudioconference18",
+  #                          "rstudioconference2018", "rstudio18",
+  #                          "rstudioconf18", "rstudioconf2018",
+  #                          "rstudio::conf18", "rstudio::conf2018")
+  
+  # Paste hashtags for the useR 2018 conference
+  rstudio_conf_search <- c("useR2018")
+  
   rstudio_conf_search <- paste(rstudio_conf_search, collapse = " OR ")
   
   rsconf_tweets <- search_tweets(q = rstudio_conf_search, token = twitter_token, n = 1e5, max_id = max_id)
@@ -57,7 +67,7 @@ get_new_tweets <- function(max_id) {
     )
 }
 
-needs_pulled <- FALSE
+needs_pulled <- TRUE
 if (file.exists(cacheFile)) {
   cacheTime = file.info(cacheFile)$mtime
   cacheAge = difftime(Sys.time(), cacheTime, units="min")
@@ -97,7 +107,7 @@ simpleCache('top_10_hashtags', {
     pull(hashtags) %>% 
     unlist %>% 
     data_frame(`Top 10 Hashtags` = .) %>% 
-    filter(!`Top 10 Hashtags` %in% c('rstudioconf', 'rstudio')) %>%
+    filter(!`Top 10 Hashtags` %in% c('user2018')) %>%
     group_by(`Top 10 Hashtags`) %>% 
     tally(sort = TRUE) %>% 
     top_n(10, n) %>% select(-n)
