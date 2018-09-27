@@ -21,7 +21,7 @@ cacheFile <- 'data/rsconf_tweets.rds'
 # .TWITTER_APP="rtweet_things"
 # .TWITTER_CONSUMER_KEY="xxx"
 # .TWITTER_CONSUMER_SECRET="xxx"
-# .TWITTER_PAT="./rtweet.rds"
+# .TWITTER_PAT="./rtweet_token.rds"
 
 # Twitter token created with...
 # twitter_token <- create_token(
